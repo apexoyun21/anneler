@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Anneler Günü - Sonsuz Sevgi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #0a0f2a 0%, #020411 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-family: 'Times New Roman', serif;
+            position: relative;
+            cursor: default;
+        }
+
+        /* Ana Mesaj Kabı - Ortada ve özel */
+        .container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 30;
+            pointer-events: none;
+            width: 90%;
+            max-width: 700px;
+            transition: all 0.3s ease;
+        }
+
+        /* Büyük Kalp SVG (sürekli atar) */
+        .main-heart {
+            width: 100px;
+            margin: 0 auto 20px;
+            filter: drop-shadow(0 0 20px rgba(255, 120, 160, 0.8));
+            animation: heartbeat 1.8s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.12); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.9; }
+        }
+
+        .final-text {
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+            color: #fff7e8;
+            text-shadow: 0 0 12px #ff9f7c, 0 0 25px #ff6a4b;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: softGlow 2s forwards 0.5s;
+            margin-bottom: 20px;
+        }
+
+        @keyframes softGlow {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .final-text span {
+            font-size: 1rem;
+            display: block;
+            margin-top: 15px;
+            color: #ffe3c9;
+            font-style: italic;
+            letter-spacing: 1px;
+        }
+
+        /* Bol SVG İkonlar (uçuşan) */
+        .floating-icon {
+            position: absolute;
+            pointer-events: none;
+            user-select: none;
+            opacity: 0;
+            z-index: 5;
+            filter: drop-shadow(0 0 5px rgba(255,240,180,0.7));
+            animation: floatUp 7s linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(110vh) rotate(0deg) scale(0.3);
+                opacity: 0;
+            }
+            15% { opacity: 0.95; transform: translateY(90vh) rotate(15deg) scale(0.7);}
+            80% { opacity: 0.85; }
+            100% {
+                transform: translateY(-20vh) rotate(360deg) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Havai Fişek Canvas Katmanı */
+        #fireworksCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 25;
+        }
+
+        /* ÖZEL MESAJ - SADECE EN SONDA PATLAYACAK (Başlangıçta gizli, son patlama ile tetiklenir) */
+        .final-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(135deg, #FFE6B0, #FFB88C, #FFD966);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            font-size: 2.2rem;
+            font-weight: bold;
+            text-align: center;
+            z-index: 100;
+            pointer-events: none;
+            text-shadow: 0 0 30px rgba(255,200,100,0.9);
+            font-family: 'Segoe UI', 'Times New Roman', cursive;
+            letter-spacing: 2px;
+            white-space: nowrap;
+            backdrop-filter: blur(8px);
+            padding: 20px 32px;
+            border-radius: 80px;
+            background-color: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,215,0,0.5);
+            opacity: 0;
+            transition: all 0.1s ease;
+            width: max-content;
+            box-shadow: 0 0 50px rgba(255,100,0,0.3);
+        }
+
+        @keyframes grandFinalePop {
+            0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
+            20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; text-shadow: 0 0 40px gold; }
+            50% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            80% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; visibility: hidden; }
+        }
+
+        .show-final-message {
+            animation: grandFinalePop 3.2s ease forwards;
+        }
+
+        /* Responsive */
+        @media (max-width: 680px) {
+            .final-text { font-size: 1.5rem; }
+            .final-message { font-size: 1.2rem; white-space: normal; width: 85%; padding: 14px 18px; line-height: 1.4; }
+        }
+
+        /* Küçük imza */
+        .signature {
+            position: fixed;
+            bottom: 15px;
+            right: 20px;
+            color: rgba(255,255,210,0.4);
+            font-size: 11px;
+            z-index: 40;
+            font-style: italic;
+            pointer-events: none;
+        }
+        
+        /* gizleme sınıfı */
+        .hidden-temp {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Ana Kalp SVG -->
+    <svg class="main-heart" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+    </svg>
+    <div class="final-text">
+        ✧ Beyaz güller kadar saf ve güzelsin... ✧<br>
+        <span>🌷 Anneler Günün Kutlu Olsun 🌷</span>
+    </div>
+</div>
+
+<!-- Canvas: Havai fişekler için -->
+<canvas id="fireworksCanvas"></canvas>
+
+<!-- ÖZEL MESAJ - SADECE EN SON PATLAMADA GÖRÜNECEK -->
+<div id="specialFinalMessage" class="final-message">Belki Hediye Alan Bir Çocuğun Yok Ama Yazılımcı Bir Çocuğun Var 🫶</div>
+
+<div class="signature">💖 sonsuz sevgiyle 💖</div>
+
+<script>
+    // ---------------------------------------------------------------
+    // 1. BOL BOL SVG İKONLAR (Gül, Kalp, Yıldız, Papatya, Kelebek vb.)
+    // ---------------------------------------------------------------
+    const svgIcons = [
+        `<svg width="40" height="40" viewBox="0 0 64 64" fill="none"><path d="M32 12C18 12 12 24 12 32C12 44 20 52 32 52C44 52 52 44 52 32C52 24 46 12 32 12Z" fill="#fff0e0" stroke="#ffddb0" stroke-width="1.2"/><path d="M32 20C26 20 22 26 22 32C22 38 26 44 32 44C38 44 42 38 42 32C42 26 38 20 32 20Z" fill="#ffe8d4" stroke="#ffccaa"/><circle cx="32" cy="32" r="6" fill="#fff7f0" stroke="#ffb385"/></svg>`,
+        `<svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" color="#ffb7b2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`,
+        `<svg width="38" height="38" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="8" fill="#FFEAC5"/><path d="M24 4 L28 12 L20 12 Z" fill="#FFF2DF"/><path d="M24 44 L28 36 L20 36 Z" fill="#FFF2DF"/><path d="M4 24 L12 20 L12 28 Z" fill="#FFF2DF"/><path d="M44 24 L36 20 L36 28 Z" fill="#FFF2DF"/><path d="M12 42 L18 34 L6 34 Z" fill="#FFF0DC"/><path d="M36 42 L30 34 L42 34 Z" fill="#FFF0DC"/><path d="M12 6 L18 14 L6 14 Z" fill="#FFF0DC"/><path d="M36 6 L30 14 L42 14 Z" fill="#FFF0DC"/><circle cx="24" cy="24" r="4" fill="#FFCF9A"/></svg>`,
+        `<svg width="32" height="32" viewBox="0 0 24 24" fill="#fdf0c7"><polygon points="12,2 15,9 22,9 16.5,13.5 18.5,20.5 12,16 5.5,20.5 7.5,13.5 2,9 9,9 12,2" fill="#fff3bf" stroke="#ffcd94" stroke-width="0.8"/></svg>`,
+        `<svg width="35" height="35" viewBox="0 0 50 50" fill="none"><path d="M25 8 L30 20 L20 20 Z" fill="#FFEEEE"/><path d="M15 28 Q25 40 35 28 Q25 35 15 28" fill="#FFDDCC"/><path d="M25 22 L25 35" stroke="#CDAA7A" stroke-width="1.5"/><circle cx="25" cy="20" r="4" fill="#FFF2E6"/></svg>`,
+        `<svg width="28" height="28" viewBox="0 0 32 32" fill="#ffefdd"><path d="M16 30L3.5 18.5 7 7 16 2 25 7 28.5 18.5 16 30z" fill="#fff1e2" stroke="#ffcfaa"/><circle cx="16" cy="13" r="4" fill="#FFEBC4"/></svg>`,
+        `<svg width="32" height="32" viewBox="0 0 30 30"><path d="M15 27 C5 20 2 10 8 4 C12 0 18 2 22 6 C26 11 24 20 15 27Z" fill="#EFFFD0" stroke="#b3dc9c"/><path d="M15 15 L22 9" stroke="#aacf8e"/></svg>`,
+        `<svg width="32" height="32" viewBox="0 0 40 40"><path d="M20 14 C12 6 4 10 4 18 C4 26 12 28 20 20 C28 28 36 26 36 18 C36 10 28 6 20 14Z" fill="#FFFAEA" stroke="#ffcfaa"/><path d="M20 18 L20 26" stroke="#fdcb8e"/><circle cx="20" cy="16" r="2" fill="#fde0b2"/></svg>`,
+        `<svg width="30" height="30" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#FFEFC0"/></svg>`,
+        `<svg width="30" height="30" viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="white" stroke="#ffcd94"/><circle cx="20" cy="20" r="6" fill="#ffead2"/><path d="M20 8 L23 15 L17 15 Z" fill="#ffeedd"/><path d="M20 32 L23 25 L17 25 Z" fill="#ffeedd"/><path d="M8 20 L15 23 L15 17 Z" fill="#ffeedd"/><path d="M32 20 L25 23 L25 17 Z" fill="#ffeedd"/></svg>`,
+        `<svg width="34" height="34" viewBox="0 0 56 56"><path d="M28 8 L34 20 L24 20 Z" fill="#FFE8E0"/><path d="M16 32 Q28 44 40 32 Q28 39 16 32" fill="#FFD9C4"/><circle cx="28" cy="24" r="5" fill="#FFF2E0"/><path d="M28 18 L28 30" stroke="#E6B87E"/></svg>`
+    ];
+
+    function getRandomSvgIcon() {
+        return svgIcons[Math.floor(Math.random() * svgIcons.length)];
+    }
+
+    function createFloatingIcon() {
+        const div = document.createElement('div');
+        div.classList.add('floating-icon');
+        div.innerHTML = getRandomSvgIcon();
+        const randomSize = 18 + Math.random() * 30;
+        div.style.width = randomSize + 'px';
+        div.style.height = randomSize + 'px';
+        div.style.left = Math.random() * 100 + '%';
+        div.style.position = 'absolute';
+        div.style.opacity = '0';
+        const duration = 5 + Math.random() * 6;
+        div.style.animation = `floatUp ${duration}s linear infinite`;
+        div.style.animationDelay = Math.random() * 5 + 's';
+        div.style.filter = 'drop-shadow(0 0 4px rgba(255,245,200,0.7))';
+        document.body.appendChild(div);
+        setTimeout(() => {
+            if(div && div.remove) div.remove();
+        }, (duration * 1000) + 600);
+    }
+
+    // Çok sayıda SVG ikonu başlangıçta + periyodik
+    for(let i = 0; i < 32; i++) {
+        setTimeout(() => createFloatingIcon(), i * 150);
+    }
+    setInterval(() => {
+        createFloatingIcon();
+        if(Math.random() > 0.65) createFloatingIcon();
+    }, 350);
+
+    // 2. HAVAI FİŞEK CANVAS + GRAND FINALE (SADECE EN SON PATLAMA)
+    const canvas = document.getElementById('fireworksCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let particles = [];
+    let rockets = [];
+    let grandFinaleTriggered = false;   // final mesaj sadece bir kez patlayacak
+    let finaleRocketsLaunched = false;
+    let activeFinaleSequence = false;
+
+    function resizeCanvas() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Rocket {
+        constructor(x, y, targetX, targetY, color, isFinale = false) {
+            this.x = x;
+            this.y = y;
+            this.targetX = targetX;
+            this.targetY = targetY;
+            this.color = color;
+            this.radius = 3.5;
+            this.speed = 5.5;
+            this.angle = Math.atan2(targetY - y, targetX - x);
+            this.vx = Math.cos(this.angle) * this.speed;
+            this.vy = Math.sin(this.angle) * this.speed;
+            this.active = true;
+            this.isFinale = isFinale;
+        }
+        
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            const dx = this.x - this.targetX;
+            const dy = this.y - this.targetY;
+            if (Math.hypot(dx, dy) < 8) {
+                this.active = false;
+                if (this.isFinale && !grandFinaleTriggered) {
+                    // FINAL PATLAMA: Özel mesaj göster ve dev patlama yap
+                    grandFinaleTriggered = true;
+                    showGrandFinaleMessageAndFinalBurst(this.targetX, this.targetY);
+                } else {
+                    createExplosion(this.targetX, this.targetY, this.color, false);
+                }
+                return true;
+            }
+            return false;
+        }
+        
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = this.color;
+        }
+    }
+    
+    class Particle {
+        constructor(x, y, color, vx, vy, size, isSuper=false) {
+            this.x = x; this.y = y; this.color = color; this.vx = vx; this.vy = vy;
+            this.size = size; this.gravity = 0.12; this.alpha = 1;
+            this.decay = 0.015 + Math.random() * 0.02;
+            this.life = 1; this.isSuper = isSuper;
+        }
+        update() {
+            this.vx *= 0.99;
+            this.vy += this.gravity;
+            this.x += this.vx; this.y += this.vy;
+            this.life -= this.decay;
+            this.alpha = this.life;
+            return this.life > 0;
+        }
+        draw() {
+            ctx.save();
+            ctx.globalAlpha = this.alpha * 0.9;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+    
+    function createExplosion(x, y, baseColor, isSuperExplosion = false) {
+        let count = isSuperExplosion ? 140 : 70 + Math.floor(Math.random() * 45);
+        for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 2 + Math.random() * (isSuperExplosion ? 7 : 5);
+            const vx = Math.cos(angle) * speed * (Math.random() * 1.3);
+            const vy = Math.sin(angle) * speed * (Math.random() * 1.3);
+            let hue;
+            if(isSuperExplosion) hue = 40 + Math.random() * 40; // altın, turuncu, kırmızı tonları
+            else hue = (baseColor === 'gold') ? 45 : (Math.random() * 60 + 30);
+            const color = `hsl(${hue}, 100%, 60%)`;
+            const pSize = isSuperExplosion ? 2.5 + Math.random() * 4 : 2 + Math.random() * 3.5;
+            particles.push(new Particle(x, y, color, vx, vy, pSize));
+        }
+        // ekstra ışıltı
+        for(let i=0;i< (isSuperExplosion?35:12); i++) {
+            particles.push(new Particle(x, y, '#FFF8C0', (Math.random()-0.5)*7, (Math.random()-0.5)*7-2, 3.2));
+        }
+    }
+    
+    // Finale Özel: Büyük mesaj patlaması ve süper parıltılar
+    function showGrandFinaleMessageAndFinalBurst(x, y) {
+        // dev bir patlama efekti yap
+        createExplosion(x, y, '#FFD966', true);
+        // ekstra çevre patlamalar
+        for(let i=0;i<8;i++) {
+            setTimeout(() => {
+                const offX = x + (Math.random() - 0.5) * 180;
+                const offY = y + (Math.random() - 0.5) * 150;
+                createExplosion(offX, offY, '#FFAA66', true);
+            }, i * 100);
+        }
+        // Özel mesajı göster (EN SONDA)
+        const msgDiv = document.getElementById('specialFinalMessage');
+        msgDiv.classList.remove('show-final-message');
+        void msgDiv.offsetWidth;
+        msgDiv.classList.add('show-final-message');
+        // Ayrıca tüm ekranı saran bir altın efekti
+        for(let i=0;i<60;i++) {
+            setTimeout(()=>{
+                const starX = Math.random() * width;
+                const starY = Math.random() * height;
+                createExplosion(starX, starY, '#FFC285', false);
+            }, i*45);
+        }
+    }
+    
+    function launchRandomRocket(finaleMode = false) {
+        if (!width || !height) return;
+        const targetX = 80 + Math.random() * (width - 160);
+        const targetY = 80 + Math.random() * (height * 0.65);
+        const startX = 20 + Math.random() * (width - 40);
+        const startY = height;
+        const colors = ['#FFB7B2', '#FFD966', '#FFA07A', '#FADADD', '#FFC8A2', '#FFE6B0'];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        rockets.push(new Rocket(startX, startY, targetX, targetY, color, finaleMode));
+    }
+    
+    // GRAND FINALE tetikleyici: sayfa yüklendikten 6 saniye sonra ve sürekli roketler atıldıktan sonra "final patlama" dizisi başlat
+    // İstenen: "en sonda" yani ana mesajlar ve güller uçuştuktan sonra özel mesaj görünsün.
+    // Bunun için 8 saniye sonra yoğun final roketleri başlatıp içlerinden bir tanesi mesajı tetikleyecek.
+    let finalStarted = false;
+    setTimeout(() => {
+        if (!finalStarted && !grandFinaleTriggered) {
+            finalStarted = true;
+            // Finale başlangıcı: çok sayıda roket fırlat ve bir tanesini special finale işaretle
+            for(let i=0;i<14;i++) {
+                setTimeout(() => {
+                    let isSpecial = (i === 7); // 8. roket mesaj patlatıcı olsun
+                    if (isSpecial && !grandFinaleTriggered) {
+                        const targetX = width/2 + (Math.random() - 0.5) * 150;
+                        const targetY = height/2 - 50 + (Math.random() * 80);
+                        const startX = 40 + Math.random() * (width-80);
+                        const startY = height;
+                        rockets.push(new Rocket(startX, startY, targetX, targetY, '#FFDD99', true));
+                    } else {
+                        launchRandomRocket(false);
+                    }
+                }, i * 220);
+            }
+            // Ekstra yoğun roket yağmuru
+            let finalInterval = setInterval(() => {
+                if(grandFinaleTriggered) {
+                    clearInterval(finalInterval);
+                } else {
+                    if(rockets.length < 10) launchRandomRocket(false);
+                    if(!grandFinaleTriggered && Math.random()>0.7) launchRandomRocket(false);
+                }
+            }, 700);
+            // 3 saniye sonra eğer hala tetiklenmediyse manuel olarak merkezde mesaj patlat (güvence)
+            setTimeout(() => {
+                if(!grandFinaleTriggered) {
+                    grandFinaleTriggered = true;
+                    const centerX = width/2;
+                    const centerY = height/2 - 40;
+                    createExplosion(centerX, centerY, '#FFC285', true);
+                    showGrandFinaleMessageAndFinalBurst(centerX, centerY);
+                }
+            }, 4800);
+        }
+    }, 5200); // 5.2 saniye sonra final başlasın, önce ana metin ve güller görünsün
+    
+    // ayrıca normal havai fişekler başlangıçta canlılık için 1 saniyede başlasın
+    let normalFireInterval = setInterval(() => {
+        if(!finalStarted && !grandFinaleTriggered) {
+            launchRandomRocket(false);
+        } else if(finalStarted && !grandFinaleTriggered){
+            // finale öncesi ara ara roket
+            if(Math.random()>0.5) launchRandomRocket(false);
+        }
+    }, 1000);
+    
+    // Temizlik için canvas animasyon döngüsü
+    function animateFireworks() {
+        if (!ctx) return;
+        ctx.clearRect(0, 0, width, height);
+        for (let i=0; i<rockets.length; i++) {
+    const r = rockets[i];
+    r.update();
+    r.draw();
+    if (!r.active) { 
+        rockets.splice(i,1); 
+        i--; 
+    }
+}
+for (let i=0; i<particles.length; i++) {
+    const p = particles[i];
+    const alive = p.update();
+    p.draw();
+    if (!alive) { 
+        particles.splice(i,1); 
+        i--; 
+    }
+}
+requestAnimationFrame(animateFireworks);
+}
+
+// Ekstra: Işıltılı minik yıldızlar (süs)
+function addSparkle() {
+    const sp = document.createElement('div');
+    sp.innerHTML = '✨';
+    sp.style.position = 'absolute';
+    sp.style.left = Math.random() * 100 + '%';
+    sp.style.top = Math.random() * 100 + '%';
+    sp.style.fontSize = (12 + Math.random() * 18)+'px';
+    sp.style.opacity = '0.6';
+    sp.style.pointerEvents = 'none';
+    sp.style.zIndex = '22';
+    sp.style.filter = 'blur(0.3px)';
+    sp.style.transition = 'opacity 1.2s';
+    document.body.appendChild(sp);
+    setTimeout(() => { sp.style.opacity = '0'; setTimeout(() => sp.remove(), 1000); }, 400);
+}
+setInterval(() => { if(Math.random() > 0.75) addSparkle(); }, 800);
+
+// Olası mobil uyum
+console.log("💐 Anneler Günü kutlu olsun! Özel mesaj en sonda havai fişeklerle patlıyor 💐");
+</script>
+</body>
+</html> 
